@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% if session['assessment'] == 'stress' %}
+            Stress Assessment: Question {{ q_num + 1 }}
+        {% elif session['assessment'] == 'feature_based' %}
+            Feature-Based Assessment: Question {{ q_num + 1 }}
+        {% else %}
+            Question {{ q_num + 1 }}
+        {% endif %}
+    </title>
+
+    <style>
+        /* Basic reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f6f8;
+            overflow: auto;
+            padding: 1rem;
+        }
+        .container {
+            max-width: 450px;
+            width: 100%;
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 15px;
+            background-color: #28a745;
+            width: {{ ((q_num + 1) / total_questions) * 100 }}%;
+            transition: width 0.5s ease;
+        }
+        h1 {
+            font-size: 1.4rem;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        .question-image {
+            max-width: 100%;
+            height: auto;
+            margin: 1rem 0; /* Add margin to create space around the image */
+            border-radius: 10px;
+            max-height: 130px; /* Reduce the image height to prevent it from blocking content */
+            object-fit: cover; /* Ensure the image fits within the defined size */
+        }
+        p {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        .error {
+            color: #e74c3c;
+            margin-bottom: 1rem;
+        }
+        .option-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .option {
+            position: relative;
+            width: 100%;
+            padding: 0.8rem;
+            background-color: #f1f3f5;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            color: #333;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.1s ease;
+        }
+        .option:hover {
+            background-color: rgba(40, 167, 69, 0.5);
+            color: white;
+        }
+        .option:active {
+            transform: scale(1.05);
+        }
+        .option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .option.selected {
+            background-color: rgba(40,167,69,0.5);
+            color: white;
+        }
+        .submit-button {
+            display: none; /* Hide the submit button as we will auto-submit */
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.2rem;
+            }
+            p {
+                font-size: 0.9rem;
+            }
+            .option {
+                font-size: 0.8rem;
+                padding: 0.7rem;
+            }
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+    <script>
+        // JavaScript function to handle the option selection and transition
+        function selectOption(label) {
+            // Remove selected class from all options
+            document.querySelectorAll('.option').forEach(option => {
+                option.classList.remove('selected');
+            });
+
+            // Add selected class to the clicked option
+            label.classList.add('selected');
+
+            // Submit the form
+            label.closest('form').submit();
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+        </div>
+        <h1>Question {{ q_num + 1 }}</h1>
+        <img src="{{ question_image_url }}" alt="Question Image" class="question-image">
+        <p>{{ question }}</p>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+        <form method="post" class="option-container">
+            {% for option in options %}
+                <label class="option" onclick="selectOption(this)">
+                    <input type="radio" name="answer" value="{{ loop.index0 }}" required>
+                    {{ option }}
+                </label>
+            {% endfor %}
+            <button type="submit" class="submit-button">Next</button>
+        </form>
+    </div>
+</body>
+</html>

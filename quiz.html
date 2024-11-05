@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stress Condition Quiz</title>
+</head>
+<body>
+    <h1>Stress Condition Quiz</h1>
+    <form action="/submit" method="post">
+        {% for question in questions %}
+            <label>{{ question }}</label><br>
+            <input type="radio" name="q{{ loop.index }}" value="1"> Yes
+            <input type="radio" name="q{{ loop.index }}" value="0"> No
+            <br><br>
+        {% endfor %}
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

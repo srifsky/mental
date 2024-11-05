@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Results</title>
+    <style>
+        /* Basic reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f6f8;
+        }
+        .container {
+            max-width: 500px;
+            width: 90%;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+        }
+        h1 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+        .result-text {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        .result-label {
+            font-weight: bold;
+            color: #333;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .progress-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        .progress-bar {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            background-color: #e0e0e0;
+            border-radius: 25px;
+            overflow: hidden;
+            position: relative;
+            margin: 0 10px;
+        }
+        .progress {
+            height: 20px;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+            font-weight: bold;
+            transition: width 0.5s ease;
+        }
+        .low {
+            width: 33%;
+            background-color: #28a745;
+        }
+        .moderate {
+            width: 66%;
+            background-color: #ffc107;
+        }
+        .high {
+            width: 100%;
+            background-color: #dc3545;
+        }
+        .emoji {
+            font-size: 1.5rem;
+        }
+        .button {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            color: #fff;
+            font-size: 1rem;
+            border: 2px solid;
+            border-radius: 20px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 1rem;
+        }
+        .button-download {
+            background-color: #28a745;
+        }
+        .button-download:hover {
+            background-color: #218838;
+        }
+        .button-return {
+            background-color: #007bff;
+        }
+        .button-return:hover {
+            background-color: #0056b3;
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .close {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        input[type="text"] {
+            width: 90%;
+            padding: 0.5rem;
+            margin-top: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        input[type="text"][disabled] {
+            background-color: #e9ecef;
+            color: #6c757d;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .checkbox-container label {
+            margin-left: 5px;
+            font-size: 0.9rem;
+            color: #333;
+        }
+        .info-icon,
+        .heart-icon {
+            font-size: 1.2rem;
+            color: #007bff;
+            cursor: pointer;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: #e9ecef;
+            padding: 6px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .heart-icon {
+            top: 55px;
+            right: 15px;
+        }
+        .info-icon:hover,
+        .heart-icon:hover {
+            color: #fff;
+            background-color: #007bff;
+        }
+        .advice-content {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Your Assessment Results</h1>
+        <span class="info-icon" id="info-icon">ℹ️</span>
+        <span class="heart-icon" id="heart-icon">❤️</span>
+
+        {% if stress_level and stress_type %}
+            <!-- Display Stress Assessment Results -->
+            <span class="result-label">Stress Level:</span>
+            <div class="progress-container">
+                {% if stress_level != 'High' %}
+                    <span class="emoji emoji-happy">😊</span>
+                {% endif %}
+                <div class="progress-bar">
+                    <div class="progress {% if stress_level == 'Low' %}low{% elif stress_level == 'Moderate' %}moderate{% else %}high{% endif %}">
+                        {{ stress_level }}
+                    </div>
+                </div>
+                {% if stress_level == 'High' %}
+                    <span class="emoji emoji-unhappy">😟</span>
+                {% endif %}
+            </div>
+            <p class="result-text">
+                <span class="result-label">Stress Type:</span> {{ stress_type }}
+            </p>
+            <div class="advice-content" id="advice-content">
+                {% if stress_level == 'Low' %}
+                    <p>สำหรับคนที่มีแนวโน้มเป็นภาวะเครียดประเภทความเครียดที่เกิดจากความกดดันในบางสถานการณ์ (Acute stress) ระดับต่ำ เราอยากบอกคุณว่า;</p>
+
+                    <p>“การรู้สึกเครียดเล็กน้อยเป็นเรื่องธรรมดา มันแสดงว่าคุณใส่ใจกับสิ่งที่ทำ ลองหายใจลึก ๆ และพักสักครู่ ทำสิ่งที่ชอบเพื่อผ่อนคลาย แล้วกลับมาใหม่จะรู้สึกดีขึ้น”</p>
+                {% elif stress_level == 'Moderate' %}
+                    <p>For moderate stress levels, consider incorporating relaxation techniques such as meditation or deep breathing exercises into your daily routine. Regular physical exercise, proper sleep, and talking to friends or a counselor can also help reduce stress.</p>
+                {% elif stress_level == 'High' %}
+                    <p>High stress levels require immediate attention. Try relaxation exercises like yoga or mindfulness meditation. Seeking support from friends, family, or a mental health professional is crucial. Reducing caffeine and alcohol consumption can also have a positive impact.</p>
+                {% endif %}
+            </div>
+        {% elif Depression_Level and not result_output %}
+            <!-- Display Depression Assessment Result -->
+            <p class="result-text">
+                <span class="result-label">Depression Stage:</span> {{ Depression_Level }}
+            </p>
+        {% elif result_output %}
+            <!-- Display Feature-Based or Overall Mental Health Assessment Result as Descriptive Text -->
+            <p class="result-text">
+                <span class="result-label">Overall Mental Health Assessment:</span> {{ result_output }}
+            </p>
+        {% else %}
+            <!-- Fallback Message if no results are found -->
+            <p class="result-text">No results available. Please try taking an assessment.</p>
+        {% endif %}
+
+        <!-- Trigger the modal with a button -->
+        <button id="download-button" class="button button-download">Download Report</button>
+        <a href="{{ url_for('home') }}" class="button button-return">Return to Home</a>
+    </div>
+
+    <!-- The Modal for Download -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Enter your name for the report card:</h2>
+            <input type="text" id="user-name" placeholder="Your Name" />
+            <div class="checkbox-container">
+                <input type="checkbox" id="anonymous" name="anonymous" />
+                <label for="anonymous">Tick if you want to stay anonymous</label>
+            </div>
+            <button onclick="submitDownload()" class="button button-download" style="margin-top: 20px;">Submit</button>
+        </div>
+    </div>
+
+    <!-- The Modal for Assessment Reference Info -->
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-info">&times;</span>
+            <h2>Assessment Reference Information</h2>
+            <p>การประเมินนี้อิงจากกรอบการประเมินสุขภาพจิตที่ได้มาตรฐานและถูกปรับให้เป็นรูปแบบเชิงเรื่องราวเพื่อทำให้มีความน่าสนใจและเข้าถึงได้ง่ายยิ่งขึ้น คำถามถูกนำมาจากเครื่องมือทางจิตวิทยาที่เป็นที่ยอมรับ ซึ่งใช้วัดระดับความเครียด ภาวะซึมเศร้า และความเป็นอยู่ทางจิตใจโดยรวม</p>
+            <p>สำหรับข้อมูลเพิ่มเติม สามารถอ่านบทความได้ที่: <a href="https://www.jstor.org/stable/2136404?origin=crossref" target="_blank">เข้าใจวิธีการประเมินของเรา</a>.</p>
+        </div>
+    </div>
+
+    <script>
+        // Get the modals
+        var modal = document.getElementById("myModal");
+        var infoModal = document.getElementById("infoModal");
+
+        // Get the buttons that open the modals
+        var btn = document.getElementById("download-button");
+        var infoIcon = document.getElementById("info-icon");
+        var heartIcon = document.getElementById("heart-icon");
+
+        // Get the <span> elements that close the modals
+        var span = document.getElementsByClassName("close")[0];
+        var closeInfo = document.getElementById("close-info");
+
+        // When the user clicks the button, open the download modal
+        btn.onclick = function() {
+            modal.style.display = "block";
+        }
+
+        // When the user clicks the info icon, open the info modal
+        infoIcon.onclick = function() {
+            infoModal.style.display = "block";
+        }
+
+        // Toggle advice content on heart icon click
+        heartIcon.onclick = function() {
+            var adviceContent = document.getElementById("advice-content");
+            if (adviceContent.style.display === "none" || adviceContent.style.display === "") {
+                adviceContent.style.display = "block";
+            } else {
+                adviceContent.style.display = "none";
+            }
+        }
+
+        // When the user clicks on <span> (x), close the respective modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        closeInfo.onclick = function() {
+            infoModal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modals, close them
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            } else if (event.target == infoModal) {
+                infoModal.style.display = "none";
+            }
+        }
+
+        // Handle the download form submission
+        function submitDownload() {
+            const userNameInput = document.getElementById('user-name');
+            const anonymousCheckbox = document.getElementById('anonymous');
+
+            if (anonymousCheckbox.checked) {
+                userNameInput.value = 'Anonymous';
+                userNameInput.disabled = true;
+            } else {
+                userNameInput.disabled = false;
+            }
+
+            let userName = userNameInput.value.trim();
+            if (!userName) {
+                alert('Please enter your name or tick the anonymous box.');
+                return;
+            }
+
+            // Create a form to submit the data
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/download_report_pdf'; // Make sure this matches the Flask route
+
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'user_name';
+            input.value = userName;
+            form.appendChild(input);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Disable the name input when anonymous checkbox is ticked
+        document.getElementById('anonymous').addEventListener('change', function() {
+            const userNameInput = document.getElementById('user-name');
+            if (this.checked) {
+                userNameInput.value = 'Anonymous';
+                userNameInput.disabled = true;
+            } else {
+                userNameInput.value = '';
+                userNameInput.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
